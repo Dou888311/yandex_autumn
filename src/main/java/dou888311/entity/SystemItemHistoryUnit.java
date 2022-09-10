@@ -32,4 +32,14 @@ public class SystemItemHistoryUnit {
     private int size;
 
     private LocalDateTime date;
+
+
+    public SystemItemHistoryUnit(SystemItem item) {
+        this.id = item.getId();
+        this.url = item.getUrl();
+        this.parentId = item.getParentId();
+        this.type = item.getType();
+        this.size = item.getSize();
+        this.date = item.getDate();
+    }
 }
