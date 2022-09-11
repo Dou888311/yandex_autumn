@@ -1,5 +1,6 @@
 package dou888311.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import dou888311.dto.SystemItemType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class SystemItem {
 
     private String url;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime date;
 
     private String parentId;

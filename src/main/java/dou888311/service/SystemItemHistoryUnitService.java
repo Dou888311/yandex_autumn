@@ -22,13 +22,22 @@ public class SystemItemHistoryUnitService {
 
     public void update(Set<SystemItemHistoryUnit> statistics) {
         Set<SystemItemHistoryUnit> units = new HashSet<>();
+        Set<SystemItemHistoryUnit> folders = new HashSet<>();
         for (var unit : statistics) {
-            unit.setSize(getPrice(unit));
-            historyRepository.save(unit);
+            if (unit.getType() == SystemItemType.FILE) {
+                unit.setSize(getSize(unit));
+                units.add(unit);
+            } else {
+                folders.add(unit);
+            }
         }
+        folders.forEach(e -> e.setSize(getSize(e)));
+
+        historyRepository.saveAll(units);
+        historyRepository.saveAll(folders);
     }
 
-    private int getPrice(SystemItemHistoryUnit unit) {
+    private int getSize(SystemItemHistoryUnit unit) {
         int size = 0;
         if (unit.getType() == SystemItemType.FOLDER) {
             List<SystemItemHistoryUnit> children = itemRepository.findAllChildrenById(unit.getId())
@@ -36,7 +45,7 @@ public class SystemItemHistoryUnitService {
                     .map(SystemItemHistoryUnit::new)
                     .collect(Collectors.toList());
             for (var child : children) {
-                size += getPrice(child);
+                size += getSize(child);
             }
         } else {
             return unit.getSize();

@@ -17,11 +17,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class SystemItemServiceImpl implements SystemItemService {
-
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     @Autowired
     SystemItemRepository itemRepository;
@@ -31,7 +30,7 @@ public class SystemItemServiceImpl implements SystemItemService {
     Validator validator;
 
     public void importSystemItem(SystemItemImportRequest request)  {
-        LocalDateTime date = request.getUpdateDate();//LocalDateTime.parse(request.getUpdateDate(), formatter);
+        LocalDateTime date = request.getUpdateDate();
         List<SystemItem> list = request.getItems().stream()
                 .map(i -> i.toSystemItem(date))
                 .collect(Collectors.toList());
@@ -47,11 +46,11 @@ public class SystemItemServiceImpl implements SystemItemService {
             units.forEach(i -> i.setDate(date));
             itemRepository.saveAll(units);
 
-            Set<SystemItemHistoryUnit> statistic = units.stream()
+            Set<SystemItemHistoryUnit> statistic = Stream.concat(units.stream(), list.stream())
                     .map(SystemItemHistoryUnit::new)
                     .collect(Collectors.toSet());
-            historyService.update(statistic);
 
+            historyService.update(statistic);
         } else {
             throw new ValidationException("Validation Failed");
         }
@@ -69,8 +68,6 @@ public class SystemItemServiceImpl implements SystemItemService {
         }
         return parents;
     }
-
-
 
     public SystemItem findById(String id) {
         Optional<SystemItem> optional = itemRepository.findById(id);
