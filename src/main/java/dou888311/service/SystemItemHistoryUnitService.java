@@ -1,13 +1,13 @@
 package dou888311.service;
 
 import dou888311.dto.SystemItemType;
-import dou888311.entity.SystemItem;
 import dou888311.entity.SystemItemHistoryUnit;
 import dou888311.repository.SystemItemHistoryUnitRepository;
 import dou888311.repository.SystemItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,5 +56,9 @@ public class SystemItemHistoryUnitService {
     public int getLatest(String id) {
         Optional<Integer> optional = Optional.of(historyRepository.getLatest(id));
         return optional.orElse(0);
+    }
+
+    public List<SystemItemHistoryUnit> getStatistic(String id, LocalDateTime dateStart, LocalDateTime dateEnd) {
+        return historyRepository.getStatistic(id, dateStart, dateEnd);
     }
 }

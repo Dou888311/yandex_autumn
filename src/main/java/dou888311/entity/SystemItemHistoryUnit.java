@@ -1,5 +1,6 @@
 package dou888311.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import dou888311.dto.SystemItemType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class SystemItemHistoryUnit {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @JsonProperty(access=JsonProperty.Access.WRITE_ONLY)
     private long primary_key;
 
     @NotNull
@@ -32,7 +34,6 @@ public class SystemItemHistoryUnit {
     private int size;
 
     private LocalDateTime date;
-
 
     public SystemItemHistoryUnit(SystemItem item) {
         this.id = item.getId();

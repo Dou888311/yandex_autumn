@@ -5,13 +5,13 @@ import dou888311.dto.SystemItemType;
 import dou888311.entity.SystemItem;
 import dou888311.entity.SystemItemHistoryUnit;
 import dou888311.error.ValidationException;
+import dou888311.repository.SystemItemHistoryUnitRepository;
 import dou888311.repository.SystemItemRepository;
 import dou888311.support.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +24,8 @@ public class SystemItemServiceImpl implements SystemItemService {
 
     @Autowired
     SystemItemRepository itemRepository;
+    @Autowired
+    SystemItemHistoryUnitRepository historyRepository;
     @Autowired
     SystemItemHistoryUnitService historyService;
     @Autowired
@@ -83,5 +85,43 @@ public class SystemItemServiceImpl implements SystemItemService {
         item.setChildren(children.isEmpty() ? null : children);
         item.setSize(historyService.getLatest(id));
         return item;
+    }
+
+    public SystemItem deleteNode(String id) {
+        SystemItem item = childrenDelete(id);
+        if (item == null) return null;
+
+        Set<SystemItem> parents = findParents(item);
+        LocalDateTime nowUpdate = LocalDateTime.now();
+
+        Set<SystemItemHistoryUnit> statisticUpdate = parents.stream()
+                .map(SystemItemHistoryUnit::new)
+                .peek(i -> i.setDate(nowUpdate))
+                .collect(Collectors.toSet());
+
+        historyService.update(statisticUpdate);
+        return item;
+    }
+
+    public SystemItem childrenDelete(String id) {
+        Optional<SystemItem> optional = itemRepository.findById(id);
+        if (optional.isEmpty()) return null;
+        SystemItem item = optional.get();
+
+        List<SystemItem> children = itemRepository.findAllChildrenById(id);
+        children.forEach(c -> childrenDelete(c.getId()));
+
+        historyRepository.deleteAllBySystemItemId(id);
+        itemRepository.deleteById(id);
+
+        return item;
+    }
+
+    public List<SystemItem> findRecentlyUpdated(LocalDateTime from) {
+        return itemRepository.findAllItemsByDate(from.minusDays(1), from);
+    }
+
+    public boolean isItemFound(String id) {
+        return itemRepository.existsById(id);
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 public class SystemItem {
+
     @Id
     @NotNull
     private String id;

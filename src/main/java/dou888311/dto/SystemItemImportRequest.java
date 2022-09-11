@@ -12,9 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SystemItemImportRequest {
+
     @NotNull
     private List<SystemItemImport> items;
     @NotNull
     private LocalDateTime updateDate;
-
 }

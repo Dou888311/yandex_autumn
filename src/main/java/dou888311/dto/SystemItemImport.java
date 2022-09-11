@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SystemItemImport {
+
     @NotNull
     private String id;
     private String url;

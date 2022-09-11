@@ -44,9 +44,8 @@ public class Validator {
 
     public static boolean isUrlLessThan255ForFile(SystemItem item) {
         if (item.getType() == SystemItemType.FILE) {
-            if (item.getUrl().length() > 255) return false;
+            return item.getUrl().length() <= 255;
         }
         return true;
     }
-
 }
