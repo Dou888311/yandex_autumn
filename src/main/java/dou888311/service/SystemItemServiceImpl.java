@@ -58,7 +58,7 @@ public class SystemItemServiceImpl implements SystemItemService {
         }
     }
 
-    public Set<SystemItem> findParents(SystemItem item) {
+    private Set<SystemItem> findParents(SystemItem item) {
         Set<SystemItem> parents = new HashSet<>();
         if (item.getParentId() == null) return parents;
 
@@ -103,7 +103,7 @@ public class SystemItemServiceImpl implements SystemItemService {
         return item;
     }
 
-    public SystemItem childrenDelete(String id) {
+    private SystemItem childrenDelete(String id) {
         Optional<SystemItem> optional = itemRepository.findById(id);
         if (optional.isEmpty()) return null;
         SystemItem item = optional.get();

@@ -9,5 +9,4 @@ class AnotherDiskApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
