@@ -11,7 +11,9 @@ import dou888311.support.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -87,12 +89,21 @@ public class SystemItemServiceImpl implements SystemItemService {
         return item;
     }
 
-    public SystemItem deleteNode(String id) {
+    public SystemItem deleteNode(String id, String date) {
+        LocalDateTime nowUpdate;
+        try {
+            Instant ins = Instant.parse(date);
+            nowUpdate = LocalDateTime.ofInstant(ins, ZoneOffset.UTC);
+        } catch (Exception e) {
+            throw new ValidationException("Validation Failed");
+        }
+
         SystemItem item = childrenDelete(id);
         if (item == null) return null;
 
         Set<SystemItem> parents = findParents(item);
-        LocalDateTime nowUpdate = LocalDateTime.now();
+        parents.forEach(e -> e.setDate(nowUpdate));
+        itemRepository.saveAll(parents);
 
         Set<SystemItemHistoryUnit> statisticUpdate = parents.stream()
                 .map(SystemItemHistoryUnit::new)

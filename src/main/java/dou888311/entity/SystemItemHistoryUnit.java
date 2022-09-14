@@ -1,5 +1,6 @@
 package dou888311.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dou888311.dto.SystemItemType;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,7 @@ public class SystemItemHistoryUnit {
 
     private int size;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime date;
 
     public SystemItemHistoryUnit(SystemItem item) {

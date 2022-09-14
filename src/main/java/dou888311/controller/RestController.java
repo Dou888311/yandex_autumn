@@ -47,10 +47,8 @@ public class RestController {
 
     @GetMapping("node/{id}/history")
     public SystemItemHistoryResponse getHistory(@PathVariable String id,
-                                                @RequestParam (required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                    LocalDateTime dateStart,
-                                                @RequestParam (required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                    LocalDateTime dateEnd) {
+                                                @RequestParam (required = false) String dateStart,
+                                                @RequestParam (required = false) String dateEnd) {
         if (!itemService.isItemFound(id)) throw new NotFoundException("Item not found");
 
         List<SystemItemHistoryUnit> history = new ArrayList<>(statisticService.getStatistic(id, dateStart, dateEnd));
@@ -58,7 +56,7 @@ public class RestController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteNode(@PathVariable String id) {
-        if (itemService.deleteNode(id) == null) throw new NotFoundException("Item not found");
+    public void deleteNode(@PathVariable String id, @RequestParam String date) {
+        if (itemService.deleteNode(id, date) == null) throw new NotFoundException("Item not found");
     }
 }

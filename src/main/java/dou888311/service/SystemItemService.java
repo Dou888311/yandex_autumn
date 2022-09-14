@@ -6,6 +6,6 @@ import dou888311.entity.SystemItem;
 public interface SystemItemService {
 
     void importSystemItem(SystemItemImportRequest request);
-    SystemItem deleteNode(String id);
+    SystemItem deleteNode(String id, String date);
     SystemItem findById(String id);
 }

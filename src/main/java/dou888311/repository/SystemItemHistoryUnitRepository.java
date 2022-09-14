@@ -23,6 +23,16 @@ public interface SystemItemHistoryUnitRepository extends JpaRepository<SystemIte
     @Transactional
     void deleteAllBySystemItemId(@Param("id") String id);
 
+    @Query(value = "SELECT * FROM system_item_history_unit WHERE id = :id", nativeQuery = true)
+    List<SystemItemHistoryUnit> getById(@Param("id") String id);
+
+    @Query(value = "SELECT * FROM system_item_history_unit WHERE id = :id AND date < :dateEnd", nativeQuery = true)
+    List<SystemItemHistoryUnit> getByIdBefore(@Param("id") String id,
+                                              @Param("dateEnd") LocalDateTime dateEnd);
+    @Query(value = "SELECT * FROM system_item_history_unit WHERE id = :id AND date >= :dateStart", nativeQuery = true)
+    List<SystemItemHistoryUnit> getByIdAfter(@Param("id") String id,
+                                             @Param("dateStart") LocalDateTime dateStart);
+
     @Query(value = "SELECT * FROM system_item_history_unit WHERE id = :id AND date >= :dateStart AND date < :dateEnd", nativeQuery = true)
     List<SystemItemHistoryUnit> getStatistic(@Param("id") String id,
                                              @Param("dateStart") LocalDateTime dateStart,
