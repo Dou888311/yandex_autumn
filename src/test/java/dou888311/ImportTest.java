@@ -1,31 +1,23 @@
 package dou888311;
 
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.classic.methods.HttpPost;
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.ContentType;
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.io.entity.StringEntity;
-import dou888311.MapperModule.LocalDateTimeDeserialization;
-import dou888311.MapperModule.LocalDateTimeSerialization;
+import dou888311.dto.SystemItemHistoryResponse;
 import dou888311.dto.SystemItemImport;
 import dou888311.dto.SystemItemImportRequest;
 import dou888311.dto.SystemItemType;
 import dou888311.entity.SystemItem;
-import dou888311.error.ValidationException;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.module.SimpleModule;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -165,4 +157,58 @@ public class ImportTest {
         response = restTemplate.getForEntity("http://localhost:80/nodes/rootFolder", SystemItem.class);
         Assertions.assertEquals(2249, response.getBody().getSize());
     }
+
+    @Test
+    public void folderHaveValidChildrenSize() {
+        var restTemplate = new RestTemplate();
+        var response = restTemplate.getForEntity("http://localhost:80/nodes/folder1", SystemItem.class);
+        Assertions.assertEquals(3, response.getBody().getChildren().size());
+    }
+
+    /**
+     * batch1(rootFolder) 10.10.22 10:10:00
+     * batch2(folder1, file1, file2, folder2, file3) 10.10.22 15:10:00
+     * batch3(file4, file5) 11.10.22 10:10:00
+     */
+
+    @Test
+    public void updateForLast24HoursAndContainsOnlyFiles() {
+        String date = "2022-10-10T15:10:01.000Z";
+        var restTemplate = new RestTemplate();
+        var response = restTemplate.getForEntity("http://localhost:80/updates?date=" + date,
+                SystemItemHistoryResponse.class);
+        Assertions.assertEquals(3, response.getBody().getItems().size());
+        Assertions.assertTrue(() -> {
+           for (var item : response.getBody().getItems()) {
+               if (item.getType() == SystemItemType.FOLDER) {
+                   return false;
+               }
+           }
+           return true;
+        });
+    }
+
+    @Test
+    public void deletingChildFolderShouldUpdateDateForParent() {
+        var restTemplate = new RestTemplate();
+        restTemplate.delete("http://localhost:80/delete/file2?date=2023-12-12T15:10:00Z");
+        var parentWithDate = restTemplate.getForEntity("http://localhost:80/nodes/folder1", SystemItem.class);
+        Assertions.assertEquals(LocalDateTime.ofInstant(Instant.parse("2023-12-12T15:10:00Z"), ZoneOffset.UTC),
+                parentWithDate.getBody().getDate());
+    }
+
+    @Test
+    public void cantGetHistoryForDeletingUnit() {
+        var restTemplate = new RestTemplate();
+        restTemplate.delete("http://localhost:80/delete/file4?date=2023-12-12T15:10:00Z");
+        Assertions.assertThrows(HttpClientErrorException.NotFound.class, () -> {
+            restTemplate.getForEntity("http://localhost:80/nodes/file4", SystemItem.class);
+        });
+    }
+
+    @AfterAll
+    public static void deleteRoot() {
+        new RestTemplate().delete("http://localhost:80/delete/rootFolder?date=2023-12-12T16:00:00Z");
+    }
 }
+
