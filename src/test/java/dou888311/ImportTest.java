@@ -25,6 +25,7 @@ import java.util.List;
 public class ImportTest {
 
     private final String hostImport = "http://127.0.0.1:80/imports";
+    private final String yandexHost = "https://zones-1883.usr.yandex-academy.ru/imports";
     private List<SystemItemImportRequest> batch = new ArrayList<>();
 
     {
@@ -92,7 +93,7 @@ public class ImportTest {
         RestTemplate restTemplate = new RestTemplate();
         for (var item : batch) {
             HttpEntity<SystemItemImportRequest> entity = new HttpEntity<>(item);
-            restTemplate.postForEntity(hostImport, entity, SystemItemImportRequest.class);
+            restTemplate.postForEntity(yandexHost, entity, SystemItemImportRequest.class);
         }
     }
 
@@ -111,7 +112,7 @@ public class ImportTest {
     @Test
     public void simpleImportChecking() {
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<SystemItem> response = restTemplate.getForEntity("http://localhost:80/nodes/folder2", SystemItem.class);
+        ResponseEntity<SystemItem> response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/folder2", SystemItem.class);
         Assertions.assertEquals(256, response.getBody().getSize());
     }
 
@@ -125,14 +126,14 @@ public class ImportTest {
         var request = new SystemItemImportRequest(List.of(file3TryingUpdate), LocalDateTime.of(2022,10,10,10, 15,0));
         HttpEntity<SystemItemImportRequest> entity = new HttpEntity<>(request);
         Assertions.assertThrows(HttpClientErrorException.BadRequest.class, () -> {
-            ResponseEntity<SystemItemImportRequest> response = restTemplate.postForEntity(hostImport, entity, SystemItemImportRequest.class);
+            ResponseEntity<SystemItemImportRequest> response = restTemplate.postForEntity(yandexHost, entity, SystemItemImportRequest.class);
         });
     }
 
     @Test
     public void simpleGetNodesShould200() {
         var restTemplate = new RestTemplate();
-        var response = restTemplate.getForEntity("http://localhost:80/nodes/rootFolder", SystemItem.class);
+        var response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/rootFolder", SystemItem.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -140,7 +141,7 @@ public class ImportTest {
     public void invalidIdShould404() {
         var restTemplate = new RestTemplate();
         Assertions.assertThrows(HttpClientErrorException.NotFound.class, () -> {
-            var response = restTemplate.getForEntity("http://localhost:80/nodes/invalidId123456", SystemItem.class);
+            var response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/invalidId123456", SystemItem.class);
             Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         });
     }
@@ -148,20 +149,20 @@ public class ImportTest {
     @Test
     public void getValidFolderWithCorrectSize() {
         var restTemplate = new RestTemplate();
-        var response = restTemplate.getForEntity("http://localhost:80/nodes/folder2", SystemItem.class);
+        var response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/folder2", SystemItem.class);
         Assertions.assertEquals(256, response.getBody().getSize());
 
-        response = restTemplate.getForEntity("http://localhost:80/nodes/folder1", SystemItem.class);
+        response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/folder1", SystemItem.class);
         Assertions.assertEquals(713, response.getBody().getSize());
 
-        response = restTemplate.getForEntity("http://localhost:80/nodes/rootFolder", SystemItem.class);
+        response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/rootFolder", SystemItem.class);
         Assertions.assertEquals(2249, response.getBody().getSize());
     }
 
     @Test
     public void folderHaveValidChildrenSize() {
         var restTemplate = new RestTemplate();
-        var response = restTemplate.getForEntity("http://localhost:80/nodes/folder1", SystemItem.class);
+        var response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/folder1", SystemItem.class);
         Assertions.assertEquals(3, response.getBody().getChildren().size());
     }
 
@@ -175,7 +176,7 @@ public class ImportTest {
     public void updateForLast24HoursAndContainsOnlyFiles() {
         String date = "2022-10-10T15:10:01.000Z";
         var restTemplate = new RestTemplate();
-        var response = restTemplate.getForEntity("http://localhost:80/updates?date=" + date,
+        var response = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/updates?date=" + date,
                 SystemItemHistoryResponse.class);
         Assertions.assertEquals(3, response.getBody().getItems().size());
         Assertions.assertTrue(() -> {
@@ -191,8 +192,8 @@ public class ImportTest {
     @Test
     public void deletingChildFolderShouldUpdateDateForParent() {
         var restTemplate = new RestTemplate();
-        restTemplate.delete("http://localhost:80/delete/file2?date=2023-12-12T15:10:00Z");
-        var parentWithDate = restTemplate.getForEntity("http://localhost:80/nodes/folder1", SystemItem.class);
+        restTemplate.delete("https://zones-1883.usr.yandex-academy.ru/delete/file2?date=2023-12-12T15:10:00Z");
+        var parentWithDate = restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/folder1", SystemItem.class);
         Assertions.assertEquals(LocalDateTime.ofInstant(Instant.parse("2023-12-12T15:10:00Z"), ZoneOffset.UTC),
                 parentWithDate.getBody().getDate());
     }
@@ -200,15 +201,15 @@ public class ImportTest {
     @Test
     public void cantGetHistoryForDeletingUnit() {
         var restTemplate = new RestTemplate();
-        restTemplate.delete("http://localhost:80/delete/file4?date=2023-12-12T15:10:00Z");
+        restTemplate.delete("https://zones-1883.usr.yandex-academy.ru/delete/file4?date=2023-12-12T15:10:00Z");
         Assertions.assertThrows(HttpClientErrorException.NotFound.class, () -> {
-            restTemplate.getForEntity("http://localhost:80/nodes/file4", SystemItem.class);
+            restTemplate.getForEntity("https://zones-1883.usr.yandex-academy.ru/nodes/file4", SystemItem.class);
         });
     }
 
     @AfterAll
     public static void deleteRoot() {
-        new RestTemplate().delete("http://localhost:80/delete/rootFolder?date=2023-12-12T16:00:00Z");
+        new RestTemplate().delete("https://zones-1883.usr.yandex-academy.ru/delete/rootFolder?date=2023-12-12T16:00:00Z");
     }
 }
 
