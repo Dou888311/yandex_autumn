@@ -3,8 +3,6 @@ version: '3'
 services:
   application:
     image: 'dou888311/deploy'
-    build:
-      context: .
     container_name: application
     ports :
       - 80:80
